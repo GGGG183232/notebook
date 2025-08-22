@@ -647,6 +647,8 @@ if __name__ == '__main__':
 
 ```
 
+## 语法部分
+
 ### python字符串
 
 strip()           如果首尾出现括号里的内容，则去除。
@@ -693,7 +695,7 @@ print(add(1, 2, 3, 4))  # 输出: 10
 print(add())            # 输出: 0
 ```
 
-### **`**kwargs`** 用于收集**不定数量的关键字参数**。
+### kwargs 用于收集**不定数量的关键字参数**。
 
 `kwargs` 是一个**字典（dict）**，包含了所有以 `key=value` 形式传递给函数的参数。
 
@@ -750,6 +752,33 @@ if __name__ == '__main__':
 
     convert_multiple_json_to_csv(args.json_files, args.csv_file, args.append)
 ```
+
+### with和async异步完成文件读取
+
+**`with` 最常见的用途是处理那些需要“打开”和“关闭”的资源，比如文件、数据库连接**
+
+```python
+# 使用 with 语句
+with open("example.txt", "w") as f:
+    f.write("Hello, World!")
+
+# 优点：文件 f 会在 with 代码块结束后自动关闭，即使中间发生错误。
+# 你不需要手动调用 f.close()。
+```
+
+**`with` 也可以用来管理数据库连接，确保连接在使用后被正确关闭**
+
+```python
+import sqlite3
+
+with sqlite3.connect('database.db') as conn:
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users")
+    data = cursor.fetchall()
+    # 在这里，无论是否发生错误，数据库连接都会在 with 块结束后自动关闭。
+```
+
+
 
 ### python多进程
 
