@@ -2,6 +2,15 @@
 
 ### git
 
+git添加远程仓库
+
+```
+git remote add origin <你的远程仓库URL>
+
+如：
+git remote add origin https://github.com/GGGG183232/pubchem_spider_.git
+```
+
 更新分支
 
 ```
