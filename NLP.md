@@ -102,6 +102,31 @@ git push origin feature_gjh
   2. **可扩展性**：在面向对象编程中，子类可以轻松地通过调用 `super().update_settings(settings)` 来继承父类的设置，并在其基础上添加或修改自己的设置，这比处理字典合并要简单得多。
   3. **优先级**：它允许您以高于 `custom_settings` 的优先级来应用配置，因为它是以编程方式修改 `Settings` 对象。
 
+#### python字典
+
+```python
+
+```
+
+#### 字母与Unicode相互转化
+
+```python
+#字母转Unicode
+ord('a')
+
+#unicode转字母
+chr(unicode)
+```
+
+打印a~z
+
+```python
+for i in range(0,26):
+    print(chr(ord('a')+i))
+```
+
+
+
 ### typora图片相对路径
 
 文件->偏好设置->图像
