@@ -23,6 +23,72 @@ for i in range(0,26):
 
 ### 列表
 
+#### 基本用法
+
+#### LeetCode：27. 移除元素（快慢指针）
+
+```python
+aaa = []
+print("input_num:")
+num = int(input())
+print("input_list:")
+for i in range(int(num)):
+    a = int(input())
+    aaa.append(a)
+print("input_number_to_erase:") 
+xxx = int(input())
+slow = 0    # 慢指针
+fast = 0    # 快指针
+count = 0       # 删除后剩余数个数
+for i in range(num):
+    if aaa[fast] != xxx:    # 指向的值为待报留数则赋值给慢指针
+        aaa[slow] = aaa[fast] # 慢指针扫过的数为最后要保留的数
+        fast += 1
+        slow += 1
+        count += 1
+    else:                   # 指向的值为待删除数则不赋值给慢指针
+        fast += 1
+print("answer:")
+for i in range(count):      # 输出剩余部分
+    print(aaa[i])
+
+
+
+
+```
+
+#### LeetCode：977.有序数组的平方
+
+给一个数组，有序排列（有负数情况），将数组每个元素平方后重新排序。要求时间复杂度O(n)(快排时间复杂度O(nlogn))
+
+```python
+# 如[-5，-2，0，1，3]，平方后最大的数在两边，最小的数在中间。因此从两头向中间遍历，从一个左指针一个右指针，寻找
+result = []
+aaa = []
+print("input_num:")
+num = int(input())
+for i in range(num):
+    a = int(input())
+    aaa.append(a)
+right = num - 1  
+left = 0
+for i in range(0, num):
+    if aaa[left]*aaa[left] < aaa[right]*aaa[right]:
+        result.append(aaa[right]*aaa[right])
+        right -= 1
+    else:
+        result.append(aaa[left]*aaa[left])
+        left+=1
+print("answer:")
+for i in range(num):
+    print(result[i])
+
+
+
+```
+
+
+
 ### 字典（哈希）
 
 #### 基本用法
