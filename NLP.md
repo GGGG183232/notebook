@@ -70,43 +70,96 @@ git push origin feature_gjh
 
 ### scrapy
 
-
-
-**`MySpider.from_crawler()`** 这个类方法来创建你的 Spider 实例（也就是对象）。在创建过程中，它还会把 `Crawler` 和 `Settings` 对象绑定到你的 Spider 实例上。
-
-**`from_crawler()` 的核心作用**
-
-简单来说，`from_crawler()` 是 Scrapy 框架创建 Spider 实例的**工厂方法**。当你使用 `scrapy crawl <spider_name>` 命令时，Scrapy 内部不会直接调用你 Spider 类的 `__init__()` 方法，而是调用 `from_crawler()`。
-
-它的主要职责有两个：
-
-1. **实例化 Spider**：它调用 `__init__()` 方法来创建你的 Spider 实例。这意味着你传给 `scrapy crawl` 命令的任何参数，都会通过 `*args` 和 `**kwargs` 传递给 `__init__()`。
-2. **绑定核心组件**：它将两个非常重要的属性绑定到新创建的 Spider 实例上：
-   - **`crawler`**：一个 `Crawler` 实例，它是 Scrapy 项目的“心脏”，包含了各种核心组件（如扩展、中间件、信号管理器等）。通过它，你的 Spider 可以访问到整个 Scrapy 引擎。
-   - **`settings`**：一个 `Settings` 实例，包含了当前爬虫运行时的所有配置。这让你可以在 Spider 内部方便地读取和使用项目或自定义的设置。
-
-**`custom_settings`**:
-
-- **类型**：一个静态的字典 (`dict`)。
-- **使用方式**：直接在 Spider 类中定义。
-- **特点**：简单、直接。如果您只需要覆盖少量固定的设置，这是最方便的方式。
-- **局限性**：它是一个固定的字典，无法根据运行时条件动态调整。如果您想在子类中扩展或修改父类的设置，可能需要复杂的代码来合并字典，这并不优雅。
-
-**`update_settings()`**:
-
-- **类型**：一个类方法 (`classmethod`)。
-- **使用方式**：需要重写这个方法，并在其中编写逻辑。
-- **特点**：**更灵活、更强大**。它允许您基于其他因素（如另一个设置的值）来动态修改设置。
-- **优势**：
-  1. **动态性**：可以根据 Spider 的其他属性或外部条件来动态生成设置。
-  2. **可扩展性**：在面向对象编程中，子类可以轻松地通过调用 `super().update_settings(settings)` 来继承父类的设置，并在其基础上添加或修改自己的设置，这比处理字典合并要简单得多。
-  3. **优先级**：它允许您以高于 `custom_settings` 的优先级来应用配置，因为它是以编程方式修改 `Settings` 对象。
-
-#### python字典
-
 ```python
+from pathlib import Path  # 导入 Path 模块，用于处理文件路径
+import scrapy  # 导入 scrapy 库
+
+class QuotesSpider(scrapy.Spider):
+    # 爬虫的名称，用于在命令行中启动爬虫   scrapy crawl quotes
+    name = "quotes"
+
+    # 在命令行中运行一个 Scrapy 爬虫时，框架首先会调用 start 方法，通过 yield返回一个或多个 scrapy.Request 对象，会被 Scrapy 调度器（Scheduler）	  # 接收，然后放入队列中等待被下载器（Downloader）处理
+    async def start(self):
+        # 定义一个包含起始 URL 的列表
+        urls = [
+            "https://quotes.toscrape.com/page/1/",
+            "https://quotes.toscrape.com/page/2/",
+        ]
+        # 遍历 URL 列表
+        for url in urls:
+            # 使用 yield 关键字返回一个 scrapy.Request 对象
+            # callback: 指定用于处理响应的回调函数，这里是 self.parse
+            yield scrapy.Request(url=url, callback=self.parse)
+
+    #  Scrapy 的下载器成功下载了一个网页，会将这个页面封装成一个 Response 对象，然后将其传递给 parse 函数
+    #	pardse可以 数据提取、生成新的请求(callback)、处理分页
+    def parse(self, response):
+        page = response.url.split("/")[-2]
+        filename = f"quotes-{page}.html"
+        Path(filename).write_bytes(response.body)
+        self.log(f"Saved file {filename}")
+```
+
+**存储抓取到的数据**
 
 ```
+scrapy crawl quotes -O quotes.json
+```
+
+**目录结构**
+
+`scrapy.cfg` 文件所在的目录称为 *项目根目录*
+
+```
+scrapy.cfg
+myproject/
+    __init__.py
+    items.py
+    middlewares.py
+    pipelines.py
+    settings.py
+    spiders/
+        __init__.py
+        spider1.py
+        spider2.py
+        ...
+```
+
+`scrapy.cfg` 文件指明了各个project对应的setting文件
+
+```
+[settings]
+default = myproject1.settings
+project1 = myproject1.settings
+project2 = myproject2.settings
+```
+
+
+
+
+
+Scrapy+selenium结合爬虫
+
+### Scrapy+selenium结合爬虫核心要点总结
+
+
+
+- **Selenium 浏览器实例的初始化位置**
+  - **正确做法**：在 **Spider** 的 `__init__` 方法中初始化 Selenium 浏览器对象。
+  - **原因**：Scrapy 的 Spider 对象是单例的，只会创建一个实例。如果在下载中间件中初始化，由于每个请求都会经过中间件，会导致创建多个浏览器实例，造成资源浪费和性能问题。
+  - **注意**：在爬虫关闭时（`close_spider` 方法），记得关闭 Selenium 浏览器，以释放资源。
+- **下载中间件的工作机制**
+  - 当 **`process_request()`** 方法返回一个 **Response** 对象（例如 `HtmlResponse`）时，它会中断正常的请求处理流程。
+  - **正常流程**：`process_request()` -> Scrapy 下载器 -> `process_response()`。
+  - **特殊流程**：
+    1. `process_request()` 直接返回 **Response**。
+    2. Scrapy 不再将该请求发送给其内置的下载器进行下载。
+    3. 跳过所有优先级更低的 `process_request()` 方法。
+    4. 立即转而开始执行所有下载中间件的 **`process_response()`** 方法。
+    5. `process_response()` 方法执行完毕后，将该 Response 直接传递给 Spider 进行解析。
+- **Scrapy 对接 Selenium 的实现**
+  - 通过在下载中间件的 `process_request()` 方法中集成 Selenium 的逻辑，我们可以用 Selenium 来获取页面内容，然后将这个内容包装成一个 **Response** 对象并直接返回。
+  - 这样，**Scrapy 不会再次下载这个页面**，而是将我们用 Selenium 得到的页面内容直接交给 Spider 的回调函数处理，实现了用 Selenium 替换 Scrapy 内置下载器的目的。
 
 #### 字母与Unicode相互转化
 
