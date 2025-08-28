@@ -509,6 +509,26 @@ FDA官网为例，输入aspirin，返回aspirin有关列表，注意URL为https:
 
 ![image-20250716184031315](IMG/NLP.assets/image-20250716184031315.png)
 
+### post请求处理
+
+post和get请求的区别是需要提交一些内容给后端，后端根据内容返回响应才能获取数据。因此如果要模拟一个post请求
+
+![image-20250827090839217](IMG/NLP.assets/image-20250827090839217.png)
+
+content-type指明了提交的内容是form形式
+
+![image-20250827091354474](IMG/NLP.assets/image-20250827091354474.png)
+
+需要在deploy这一列查看表单内容，然后将表单内容封装在请求中
+
+![image-20250827090914398](IMG/NLP.assets/image-20250827090914398.png)
+
+![image-20250827091812632](IMG/NLP.assets/image-20250827091812632.png)
+
+**Payload (载荷) ，在网络通信和编程的语境下，指的就是一次传输中我们真正关心的、需要发送的“核心数据”本身。**
+
+**Payload 就是去掉了所有协议、路由、地址等“包装”信息后，剩下的最纯粹的核心数据**
+
 ### google chorm调试
 
 #### elements:按键位置
